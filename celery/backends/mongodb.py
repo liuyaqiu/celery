@@ -2,6 +2,7 @@
 from datetime import datetime, timedelta
 
 from kombu.exceptions import EncodeError
+from kombu.utils.compat import register_after_fork
 from kombu.utils.objects import cached_property
 from kombu.utils.url import maybe_sanitize_url, urlparse
 
@@ -30,6 +31,10 @@ else:                                       # pragma: no cover
 __all__ = ('MongoBackend',)
 
 BINARY_CODECS = frozenset(['pickle', 'msgpack'])
+
+
+def _on_after_fork_cleanup_backend(backend):
+    backend._after_fork()
 
 
 class MongoBackend(BaseBackend):
@@ -115,6 +120,19 @@ class MongoBackend(BaseBackend):
             self.options.update(config.pop('options', {}))
             self.options.update(config)
 
+        if register_after_fork is not None:
+            register_after_fork(self, _on_after_fork_cleanup_backend)
+
+    def _after_fork(self):
+        # clear state for child processes.
+        import logging
+        logging.info("Cleanup mongodb backend after fork...")
+        self._connection = None
+        del self.database
+        del self.collection
+        del self.group_collection
+        del self.expires_delta
+
     @staticmethod
     def _ensure_mongodb_uri_compliance(url):
         parsed_url = urlparse(url)
@@ -197,14 +215,24 @@ class MongoBackend(BaseBackend):
         """Get task meta-data for a task by id."""
         obj = self.collection.find_one({'_id': task_id})
         if obj:
-            return self.meta_from_decoded({
+            task_meta = {
                 'task_id': obj['_id'],
                 'status': obj['status'],
                 'result': self.decode(obj['result']),
                 'date_done': obj['date_done'],
                 'traceback': obj['traceback'],
                 'children': obj['children'],
-            })
+            }
+            if self.app.conf.get('result_extended'):
+                task_meta.update({
+                    'name': obj['name'],
+                    'worker': obj['worker'],
+                    'queue': obj['queue'],
+                    'retries': obj['retries'],
+                    'args': obj['args'],
+                    'kwargs': obj['kwargs'],
+                })
+            return self.meta_from_decoded(task_meta)
         return {'status': states.PENDING, 'result': None}
 
     def _save_group(self, group_id, result):

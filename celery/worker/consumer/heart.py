@@ -1,4 +1,5 @@
 """Worker Event Heartbeat Bootstep."""
+import logging
 from celery import bootsteps
 from celery.worker import heartbeat
 
@@ -22,10 +23,14 @@ class Heart(bootsteps.StartStopStep):
                  without_heartbeat=False, heartbeat_interval=None, **kwargs):
         self.enabled = not without_heartbeat
         self.heartbeat_interval = heartbeat_interval
+        logging.info('enabled={}, heartbeat_interval={}'.format(
+            self.enabled, self.heartbeat_interval))
         c.heart = None
         super().__init__(c, **kwargs)
 
     def start(self, c):
+        logging.info('enabled={}, heartbeat_interval={}'.format(
+            self.enabled, self.heartbeat_interval))
         c.heart = heartbeat.Heart(
             c.timer, c.event_dispatcher, self.heartbeat_interval,
         )
