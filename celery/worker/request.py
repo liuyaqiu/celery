@@ -458,9 +458,23 @@ class Request:
             return True
         return False
 
+    def task_meta(self):
+        return {
+            'uuid': self.id,
+            'name': self.name,
+            'args': self.argsrepr,
+            'kwargs': self.kwargsrepr,
+            'root_id': self.root_id,
+            'parent_id': self.parent_id,
+            'retries': self.request_dict.get('retries', 0),
+        }
+
     def send_event(self, type, **fields):
         if self._eventer and self._eventer.enabled and self.task.send_events:
-            self._eventer.send(type, uuid=self.id, **fields)
+            # Always include task's meta.
+            merged_fields = self.task_meta()
+            merged_fields.update(fields)
+            self._eventer.send(type, uuid=self.id, **merged_fields)
 
     def on_accepted(self, pid, time_accepted):
         """Handler called when task is accepted by worker pool."""
