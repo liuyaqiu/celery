@@ -229,6 +229,7 @@ class Consumer:
             steps=self.app.steps['consumer'],
             on_close=self.on_close,
         )
+        logger.info('Consumer options: {}, kwargs: {}'.format(worker_options, kwargs))
         self.blueprint.apply(self, **dict(worker_options or {}, **kwargs))
 
     def call_soon(self, p, *args, **kwargs):

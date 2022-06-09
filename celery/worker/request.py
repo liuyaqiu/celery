@@ -474,7 +474,7 @@ class Request:
             # Always include task's meta.
             merged_fields = self.task_meta()
             merged_fields.update(fields)
-            self._eventer.send(type, uuid=self.id, **merged_fields)
+            self._eventer.send(type, **merged_fields)
 
     def on_accepted(self, pid, time_accepted):
         """Handler called when task is accepted by worker pool."""

@@ -367,7 +367,10 @@ class WorkController:
                        max_tasks_per_child=None,
                        prefetch_multiplier=None, disable_rate_limits=None,
                        worker_lost_wait=None,
-                       max_memory_per_child=None, **_kw):
+                       max_memory_per_child=None,
+                       without_heartbeat=False,
+                       heartbeat_interval=None,
+                       **_kw):
         either = self.app.either
         self.loglevel = loglevel
         self.logfile = logfile
@@ -407,3 +410,5 @@ class WorkController:
             'worker_disable_rate_limits', disable_rate_limits,
         )
         self.worker_lost_wait = either('worker_lost_wait', worker_lost_wait)
+        self.without_heartbeat = either('worker_without_heartbeat', without_heartbeat)
+        self.heartbeat_interval = either('worker_heartbeat_interval', heartbeat_interval)

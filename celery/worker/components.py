@@ -236,5 +236,7 @@ class Consumer(bootsteps.StartStopStep):
             worker_options=w.options,
             disable_rate_limits=w.disable_rate_limits,
             prefetch_multiplier=w.prefetch_multiplier,
+            without_heartbeat=w.without_heartbeat,
+            heartbeat_interval=w.heartbeat_interval
         )
         return c
