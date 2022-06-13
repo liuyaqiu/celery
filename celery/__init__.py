@@ -17,12 +17,12 @@ from . import local
 
 SERIES = 'dawn-chorus'
 
-__version__ = '5.2.5'
-__author__ = 'Ask Solem'
-__contact__ = 'auvipy@gmail.com'
-__homepage__ = 'https://docs.celeryq.dev/'
+__version__ = '5.2.5.post1'
+__author__ = 'Yaqiu Liu'
+__contact__ = 'yaqiu.liu@nio.com'
+__homepage__ = 'https://git.nevint.com/yaqiu.liu/celery/tree/yaqiu_forked_releasing'
 __docformat__ = 'restructuredtext'
-__keywords__ = 'task job queue distributed messaging actor'
+__keywords__ = "Forked version of the famous task queue celery"
 
 # -eof meta-
 
