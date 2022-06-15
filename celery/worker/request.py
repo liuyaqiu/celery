@@ -17,7 +17,7 @@ from celery import current_app, signals
 from celery.app.task import Context
 from celery.app.trace import fast_trace_task, trace_task, trace_task_ret
 from celery.exceptions import (Ignore, InvalidTaskError, Reject, Retry, TaskRevokedError, Terminated,
-                               TimeLimitExceeded, WorkerLostError)
+                               TimeLimitExceeded, WorkerLostError, WorkerInternalError)
 from celery.platforms import signals as _signals
 from celery.utils.functional import maybe, noop
 from celery.utils.log import get_logger
@@ -562,6 +562,9 @@ class Request:
             return self.acknowledge()
         elif isinstance(exc, Retry):
             return self.on_retry(exc_info)
+        elif isinstance(exc, WorkerInternalError):
+            error("reject and requeue task[{}] because of worker internal error.".format(self.id))
+            return self.reject(requeue=True)
 
         # (acks_late) acknowledge after result stored.
         requeue = False

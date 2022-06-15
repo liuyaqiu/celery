@@ -20,7 +20,7 @@ from celery import current_app, group, signals, states
 from celery._state import _task_stack
 from celery.app.task import Context
 from celery.app.task import Task as BaseTask
-from celery.exceptions import BackendGetMetaError, Ignore, InvalidTaskError, Reject, Retry
+from celery.exceptions import BackendGetMetaError, Ignore, InvalidTaskError, Reject, Retry, WorkerInternalError
 from celery.result import AsyncResult
 from celery.utils.log import get_logger
 from celery.utils.nodenames import gethostname
@@ -378,6 +378,11 @@ def build_tracer(name, task, loader=None, hostname=None, store_errors=True,
         )
         return I, R, I.state, I.retval
 
+    def on_internal_error(request, exc, uuid, state=FAILURE, call_errbacks=True):
+        I = Info(state, exc)
+        R = I.handle_reject(task, request)
+        return I, R, I.state, I.retval
+
     def trace_task(uuid, args, kwargs, request=None):
         # R      - is the possibly prepared return value.
         # I      - is the Info object.
@@ -564,9 +569,10 @@ def build_tracer(name, task, loader=None, hostname=None, store_errors=True,
             _signal_internal_error(task, uuid, args, kwargs, request, exc)
             if eager:
                 raise
+            exc = WorkerInternalError(exc)
             R = report_internal_error(task, exc)
             if task_request is not None:
-                I, _, _, _ = on_error(task_request, exc, uuid)
+                I, _, _, _ = on_internal_error(task_request, exc, uuid)
         return trace_ok_t(R, I, T, Rstr)
 
     return trace_task
