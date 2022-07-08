@@ -20,7 +20,7 @@ from celery import current_app, group, signals, states
 from celery._state import _task_stack
 from celery.app.task import Context
 from celery.app.task import Task as BaseTask
-from celery.exceptions import BackendGetMetaError, Ignore, InvalidTaskError, Reject, Retry, WorkerInternalError
+from celery.exceptions import BackendGetMetaError, Ignore, InvalidTaskError, Reject, Retry, WorkerInternalError, TaskRaisedError
 from celery.result import AsyncResult
 from celery.utils.log import get_logger
 from celery.utils.nodenames import gethostname
@@ -569,7 +569,9 @@ def build_tracer(name, task, loader=None, hostname=None, store_errors=True,
             _signal_internal_error(task, uuid, args, kwargs, request, exc)
             if eager:
                 raise
-            exc = WorkerInternalError(exc)
+            if not isinstance(exc, TaskRaisedError):
+                logger.error("Exception {} is not TaskRaisedError, convert to WorkerInternalError".format(exc))
+                exc = WorkerInternalError(exc)
             R = report_internal_error(task, exc)
             if task_request is not None:
                 I, _, _, _ = on_internal_error(task_request, exc, uuid)

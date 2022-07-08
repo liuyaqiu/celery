@@ -8,7 +8,6 @@ from kombu.mixins import ConsumerMixin
 
 from celery import uuid
 from celery.app import app_or_default
-from celery.utils.time import adjust_timestamp
 
 from .event import get_exchange
 
@@ -96,9 +95,8 @@ class EventReceiver(ConsumerMixin):
                                    connection=self.connection,
                                    channel=channel)
 
-    def event_from_message(self, body, localize=True,
+    def event_from_message(self, body,
                            now=time.time, tzfields=_TZGETTER,
-                           adjust_timestamp=adjust_timestamp,
                            CLIENT_CLOCK_SKEW=CLIENT_CLOCK_SKEW):
         type = body['type']
         if type == 'task-sent':
@@ -113,13 +111,6 @@ class EventReceiver(ConsumerMixin):
             else:
                 self.adjust_clock(clock)
 
-        if localize:
-            try:
-                offset, timestamp = tzfields(body)
-            except KeyError:
-                pass
-            else:
-                body['timestamp'] = adjust_timestamp(timestamp, offset)
         body['local_received'] = now()
         return type, body
 

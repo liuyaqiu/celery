@@ -318,3 +318,13 @@ class WorkerInternalError(Exception):
 
     def __repr__(self):
         return self.exc.__repr__()
+
+
+class TaskRaisedError(Exception):
+    """An worker internal error, the task should be reject and requeue."""
+
+    def __init__(self, exc):
+        self.exc = exc
+
+    def __repr__(self):
+        return self.exc.__repr__()

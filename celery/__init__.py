@@ -17,7 +17,7 @@ from . import local
 
 SERIES = 'dawn-chorus'
 
-__version__ = '5.2.5.post2'
+__version__ = '5.2.5.post3'
 __author__ = 'Yaqiu Liu'
 __contact__ = 'yaqiu.liu@nio.com'
 __homepage__ = 'https://git.nevint.com/yaqiu.liu/celery/tree/yaqiu_forked_releasing'
