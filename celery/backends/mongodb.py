@@ -224,14 +224,13 @@ class MongoBackend(BaseBackend):
                 'children': obj['children'],
             }
             if self.app.conf.get('result_extended'):
-                task_meta.update({
-                    'name': obj['name'],
-                    'worker': obj['worker'],
-                    'queue': obj['queue'],
-                    'retries': obj['retries'],
-                    'args': obj['args'],
-                    'kwargs': obj['kwargs'],
-                })
+                extended_fields = ['name', 'worker', 'queue', 'retries', 'args', 'kwargs']
+                for key in extended_fields:
+                    try:
+                        val = obj[key]
+                        task_meta.update({key: val})
+                    except KeyError:
+                        pass
             return self.meta_from_decoded(task_meta)
         return {'status': states.PENDING, 'result': None}
 
