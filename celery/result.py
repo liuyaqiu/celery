@@ -139,8 +139,8 @@ class AsyncResult(ResultBase):
             self.parent.forget()
         self.backend.forget(self.id)
 
-    def revoke(self, connection=None, terminate=False, signal=None,
-               wait=False, timeout=None):
+    def revoke(self, connection=None, terminate=False, early=False,
+               signal=None, wait=False, timeout=None):
         """Send revoke signal to all workers.
 
         Any worker receiving the task, or having reserved the
@@ -158,8 +158,8 @@ class AsyncResult(ResultBase):
                 ``wait`` is enabled.
         """
         self.app.control.revoke(self.id, connection=connection,
-                                terminate=terminate, signal=signal,
-                                reply=wait, timeout=timeout)
+                                terminate=terminate, early=early,
+                                signal=signal, reply=wait, timeout=timeout)
 
     def get(self, timeout=None, propagate=True, interval=0.5,
             no_ack=True, follow_parents=True, callback=None, on_message=None,
@@ -637,8 +637,8 @@ class ResultSet(ResultBase):
         for result in self.results:
             result.forget()
 
-    def revoke(self, connection=None, terminate=False, signal=None,
-               wait=False, timeout=None):
+    def revoke(self, connection=None, terminate=False, early=False,
+               signal=None, wait=False, timeout=None):
         """Send revoke signal to all workers for all tasks in the set.
 
         Arguments:
@@ -654,7 +654,8 @@ class ResultSet(ResultBase):
         """
         self.app.control.revoke([r.id for r in self.results],
                                 connection=connection, timeout=timeout,
-                                terminate=terminate, signal=signal, reply=wait)
+                                terminate=terminate, early=early,
+                                signal=signal, reply=wait)
 
     def __iter__(self):
         return iter(self.results)

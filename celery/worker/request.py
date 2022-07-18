@@ -25,6 +25,8 @@ from celery.utils.nodenames import gethostname
 from celery.utils.serialization import get_pickled_exception
 from celery.utils.time import maybe_iso8601, maybe_make_aware, timezone
 
+from celery import states
+
 from . import state
 
 __all__ = ('Request',)
@@ -456,6 +458,16 @@ class Request:
                 'expired' if expired else 'revoked', False, None, expired,
             )
             return True
+        # Check whether it is already revoked in backend.
+        if self._app.conf.early_revoke:
+            info("Task[{}] check revoked status from backend because early_revoked is enable.".format(self.id))
+            try:
+                task_meta = self.task.backend.get_task_meta(self.id)
+                if task_meta.get('status') == states.REVOKED:
+                    info("Discarding early revoked task: %s[%s]", self.name, self.id)
+                    return True
+            except Exception:
+                pass
         return False
 
     def task_meta(self):

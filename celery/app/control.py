@@ -476,7 +476,7 @@ class Control:
         )
 
     def revoke(self, task_id, destination=None, terminate=False,
-               signal=TERM_SIGNAME, **kwargs):
+               signal=TERM_SIGNAME, early=False, **kwargs):
         """Tell all (or specific) workers to revoke a task by id (or list of ids).
 
         If a task is revoked, the workers will ignore the task and
@@ -489,10 +489,21 @@ class Control:
                 on the task (if any).
             signal (str): Name of signal to send to process if terminate.
                 Default is TERM.
+            early (bool): whether mark the task revoked when this command is sent.
+                Default is False.
 
         See Also:
             :meth:`broadcast` for supported keyword arguments.
         """
+        if early or self.app.conf.early_revoke:
+            # If early_revoke is enabled, the task will be
+            # marked as revoked in backend immediately.
+            self.app.backend.mark_as_revoked(
+                task_id,
+                reason="early-revoked",
+                request=None,
+                store_result=True,
+            )
         return self.broadcast('revoke', destination=destination, arguments={
             'task_id': task_id,
             'terminate': terminate,
