@@ -460,7 +460,8 @@ class Request:
             return True
         # Check whether it is already revoked in backend.
         if self._app.conf.early_revoke:
-            info("Task[{}] check revoked status from backend because early_revoked is enable.".format(self.id))
+            logger.info("Task[{}] check revoked status: {}".format(
+                self.id, self._app.conf.early_revoke))
             try:
                 task_meta = self.task.backend.get_task_meta(self.id)
                 if task_meta.get('status') == states.REVOKED:
@@ -728,7 +729,7 @@ def create_request_cls(base, task, pool, hostname, eventer,
 
         def execute_using_pool(self, pool, **kwargs):
             task_id = self.task_id
-            if (self.expires or task_id in revoked_tasks) and self.revoked():
+            if self.revoked():
                 raise TaskRevokedError(task_id)
 
             time_limit, soft_time_limit = self.time_limits
