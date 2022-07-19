@@ -23,6 +23,8 @@ from kombu.utils.objects import cached_property
 from celery.exceptions import DuplicateNodenameWarning
 from celery.utils.log import get_logger
 from celery.utils.text import pluralize
+from celery.utils.nodenames import gethostname
+from celery.app.task import Context
 
 __all__ = ('Inspect', 'Control', 'flatten_reply')
 
@@ -498,10 +500,23 @@ class Control:
         if early or self.app.conf.early_revoke:
             # If early_revoke is enabled, the task will be
             # marked as revoked in backend immediately.
+            task_meta = self.app.backend.get_task_meta(task_id)
+            context = Context(
+                id=task_id,
+                hostname=gethostname(),
+                task=task_meta.get("name")
+            )
+            fields = ["parent_id", "children", "args", "kwargs"]
+            for key in fields:
+                val = task_meta.get(key)
+                if val:
+                    context.update({
+                        key: val
+                    })
             self.app.backend.mark_as_revoked(
                 task_id,
                 reason="early-revoked",
-                request=None,
+                request=context,
                 store_result=True,
             )
         return self.broadcast('revoke', destination=destination, arguments={

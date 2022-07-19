@@ -452,23 +452,46 @@ class Request:
             return True
         if self._expires:
             expired = self.maybe_expire()
+
         if self.id in revoked_tasks:
             info('Discarding revoked task: %s[%s]', self.name, self.id)
             self._announce_revoked(
                 'expired' if expired else 'revoked', False, None, expired,
             )
             return True
+
         # Check whether it is already revoked in backend.
-        if self._app.conf.early_revoke:
-            logger.info("Task[{}] check revoked status: {}".format(
-                self.id, self._app.conf.early_revoke))
+        def check_early_revoked(task_id):
+            if not task_id:
+                return False
             try:
-                task_meta = self.task.backend.get_task_meta(self.id)
+                task_meta = self.task.backend.get_task_meta(task_id)
                 if task_meta.get('status') == states.REVOKED:
-                    info("Discarding early revoked task: %s[%s]", self.name, self.id)
+                    self._announce_revoked(
+                        'early-revoked', False, None, expired)
                     return True
+                else:
+                    return False
             except Exception:
-                pass
+                return False
+
+        if self._app.conf.early_revoke:
+            info("Task[{}] check revoked status from backend because early_revoke is enable.".format(self.id))
+            if check_early_revoked(self.id):
+                info("Task[{}] revoked because it is early revoked.".format(self.id))
+                return True
+
+        # Check whether the parent and root is already revoked.
+        if self._app.conf.orphan_revoke:
+            info("Task[{}] check parent[{}] status from backend because orphan_revoke is enable.".format(
+                self.id, self.parent_id))
+            if check_early_revoked(self.parent_id):
+                info("Task[{}] revoked because its parent[{}] is early revoked.".format(self.id, self.parent_id))
+                return True
+            info("Task[{}] check root[{}] status from backend because orphan_revoke is enable.".format(self.id, self.root_id))
+            if check_early_revoked(self.root_id):
+                info("Task[{}] revoked because its root[{}] is early revoked.".format(self.id, self.root_id))
+                return True
         return False
 
     def task_meta(self):
