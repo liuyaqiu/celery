@@ -70,6 +70,8 @@ NAMESPACES = Namespace(
     imports=Option((), type='tuple', old=OLD_NS),
     include=Option((), type='tuple', old=OLD_NS),
     timezone=Option(type='string', old=OLD_NS),
+    early_revoke=Option(False, type='bool'),
+    orphan_revoke=Option(False, type='bool'),
     beat=Namespace(
         __old__=OLD_NS_BEAT,
 
