@@ -72,6 +72,7 @@ NAMESPACES = Namespace(
     timezone=Option(type='string', old=OLD_NS),
     early_revoke=Option(False, type='bool'),
     orphan_revoke=Option(False, type='bool'),
+    mark_sent_state=Option(False, type='bool'),
     beat=Namespace(
         __old__=OLD_NS_BEAT,
 

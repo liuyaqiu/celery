@@ -29,6 +29,7 @@ from celery.utils.dispatch import Signal
 from celery.utils.functional import first, head_from_fun, maybe_list
 from celery.utils.imports import gen_task_name, instantiate, symbol_by_name
 from celery.utils.log import get_logger
+from celery.utils.nodenames import gethostname
 from celery.utils.objects import FallbackContext, mro_lookup
 from celery.utils.time import maybe_make_aware, timezone, to_utc
 
@@ -785,6 +786,11 @@ class Celery:
                 if not ignore_result:
                     self.backend.on_task_call(P, task_id)
                 amqp.send_task_message(P, name, message, **options)
+                hostname = gethostname()
+                pid = os.getpid()
+                if self.conf.mark_sent_state:
+                    self.backend.mark_as_sent(
+                        task_id, {'pid': pid, 'hostname': hostname, 'parent': parent_id})
         result = (result_cls or self.AsyncResult)(task_id)
         # We avoid using the constructor since a custom result class
         # can be used, in which case the constructor may still use

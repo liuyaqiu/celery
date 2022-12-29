@@ -145,6 +145,10 @@ class Backend:
         url = maybe_sanitize_url(self.url or '')
         return url[:-1] if url.endswith(':///') else url
 
+    def mark_as_sent(self, task_id, meta=None):
+        """Mark a task as sent."""
+        return self.store_result(task_id, meta, states.SENT)
+
     def mark_as_started(self, task_id, **meta):
         """Mark a task as started."""
         return self.store_result(task_id, meta, states.STARTED)

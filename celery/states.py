@@ -53,7 +53,7 @@ Misc
 """
 
 __all__ = (
-    'PENDING', 'RECEIVED', 'STARTED', 'SUCCESS', 'FAILURE',
+    'SENT', 'PENDING', 'RECEIVED', 'STARTED', 'SUCCESS', 'FAILURE',
     'REVOKED', 'RETRY', 'IGNORED', 'READY_STATES', 'UNREADY_STATES',
     'EXCEPTION_STATES', 'PROPAGATE_STATES', 'precedence', 'state',
 )
@@ -70,6 +70,7 @@ PRECEDENCE = [
     'RECEIVED',
     'REJECTED',
     'RETRY',
+    'SENT',
     'PENDING',
 ]
 
@@ -125,6 +126,8 @@ class state(str):
 
 #: Task state is unknown (assumed pending since you know the id).
 PENDING = 'PENDING'
+#: Task state is sent (send by the client, but still inside queue).
+SENT = 'SENT'
 #: Task was received by a worker (only used in events).
 RECEIVED = 'RECEIVED'
 #: Task was started by a worker (:setting:`task_track_started`).
