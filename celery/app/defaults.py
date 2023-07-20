@@ -145,6 +145,7 @@ NAMESPACES = Namespace(
         queue_ttl=Option(300.0, type='float'),
         queue_expires=Option(10.0, type='float'),
         exchange=Option('celery', type='string'),
+        queue_type=Option('classic', type='string'),
     ),
     couchbase=Namespace(
         __old__=old_ns('celery_couchbase'),
@@ -325,6 +326,7 @@ NAMESPACES = Namespace(
         pool_restarts=Option(False, type='bool'),
         proc_alive_timeout=Option(4.0, type='float'),
         prefetch_multiplier=Option(4, type='int'),
+        holding_multiplier=Option(4, type='int'),
         redirect_stdouts=Option(
             True, type='bool', old={'celery_redirect_stdouts'},
         ),

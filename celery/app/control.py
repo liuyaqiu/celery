@@ -440,6 +440,7 @@ class Control:
             reply_queue_ttl=app.conf.control_queue_ttl,
             queue_expires=app.conf.control_queue_expires,
             reply_queue_expires=app.conf.control_queue_expires,
+            queue_type=app.conf.control_queue_type,
         )
         register_after_fork(self, _after_fork_cleanup_control)
 
